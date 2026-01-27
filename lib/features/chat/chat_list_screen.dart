@@ -17,13 +17,13 @@ class ChatListScreen extends ConsumerWidget {
 
     if (currentUser == null) {
       return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-            title: Text('Messages',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold))),
-        body: Center(
-            child: Text('Please log in to see messages',
-                style: GoogleFonts.outfit(color: AppColors.textSecondary))),
+        backgroundColor: const Color(0xFF0F0F1E),
+        body: const Center(
+          child: Text(
+            'Please login to view chats',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
       );
     }
 
@@ -95,70 +95,115 @@ class ChatListScreen extends ConsumerWidget {
               final lastMessage = (chat['lastMessage'] as String?) ?? '';
               final timestamp = chat['timestamp'] as DateTime?;
 
-              return ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                leading: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.surface,
-                    border: Border.all(color: Colors.white.withOpacity(0.05)),
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.cardBackground,
+                      AppColors.cardBackground.withOpacity(0.8),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: ClipOval(
-                    child: user.photoUrl != null
-                        ? Image.network(
-                            user.photoUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Center(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.1),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  leading: Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary.withOpacity(0.8),
+                          AppColors.primary,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: user.photoUrl != null
+                          ? Image.network(
+                              user.photoUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Center(
+                                child: Text(
+                                  user.displayName.isNotEmpty
+                                      ? user.displayName[0].toUpperCase()
+                                      : '?',
+                                  style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Center(
                               child: Text(
                                 user.displayName.isNotEmpty
                                     ? user.displayName[0].toUpperCase()
                                     : '?',
                                 style: GoogleFonts.outfit(
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
+                                  color: Colors.white,
                                   fontSize: 18,
                                 ),
                               ),
                             ),
-                          )
-                        : Center(
-                            child: Text(
-                              user.displayName.isNotEmpty
-                                  ? user.displayName[0].toUpperCase()
-                                  : '?',
-                              style: GoogleFonts.outfit(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
-                                fontSize: 18,
-                              ),
-                            ),
-                          ),
                   ),
-                ),
-                title: Text(user.displayName,
+                  ),
+                  title: Text(
+                    user.displayName,
                     style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                        fontSize: 16)),
-                subtitle: Text(
-                  lastMessage,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.outfit(
-                      color: AppColors.textSecondary, fontSize: 14),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                  subtitle: Text(
+                    lastMessage,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 14,
+                    ),
+                  ),
+                  trailing: Text(
+                    timeago.format(timestamp ?? DateTime.now(), locale: 'en_short'),
+                    style: GoogleFonts.outfit(
+                      color: Colors.white.withOpacity(0.5),
+                      fontSize: 12,
+                    ),
+                  ),
+                  onTap: () {
+                    context.push('/chat-detail/${chat['chatId']}', extra: user);
+                  },
                 ),
-                trailing: Text(
-                  timeago.format(timestamp ?? DateTime.now(), locale: 'en_short'),
-                  style: GoogleFonts.outfit(
-                      color: AppColors.textMuted, fontSize: 12),
-                ),
-                onTap: () {
-                  context.push('/chat-detail/${chat['chatId']}', extra: user);
-                },
               );
             },
           );

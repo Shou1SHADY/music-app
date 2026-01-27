@@ -383,14 +383,29 @@ class _MusicianListScreenState extends ConsumerState<MusicianListScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        gradient: LinearGradient(
+          colors: [
+            AppColors.cardBackground,
+            AppColors.cardBackground.withOpacity(0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: AppColors.primary.withOpacity(0.15),
             blurRadius: 20,
             offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -482,10 +497,21 @@ class _MusicianListScreenState extends ConsumerState<MusicianListScreen> {
                         onPressed: () => _showMusicianDetail(context, musician),
                         style: OutlinedButton.styleFrom(
                           minimumSize: const Size(0, 48),
+                          side: BorderSide(
+                            color: AppColors.primary.withOpacity(0.5),
+                            width: 1.5,
+                          ),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
-                        child: const Text('View Profile'),
+                        child: Text(
+                          'View Profile',
+                          style: GoogleFonts.outfit(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -524,11 +550,21 @@ class _MusicianListScreenState extends ConsumerState<MusicianListScreen> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
                           minimumSize: const Size(0, 48),
+                          elevation: 0,
+                          shadowColor: AppColors.primary.withOpacity(0.4),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
-                        child: const Text('Let\'s Jam'),
+                        child: Text(
+                          'Let\'s Jam',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ],

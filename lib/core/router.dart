@@ -10,6 +10,7 @@ import '../features/home/home_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/chat/chat_detail_screen.dart';
 import '../features/studios/studio_detail_screen.dart';
+import '../features/profile/edit_profile_screen.dart';
 import '../models/user_model.dart';
 import '../models/studio_model.dart';
 
@@ -57,6 +58,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/home',
         builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (context, state) => const EditProfileScreen(),
       ),
       GoRoute(
         path: '/chat-detail/:chatId',

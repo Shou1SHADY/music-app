@@ -23,6 +23,17 @@ class FirestoreService {
     }
   }
 
+  Future<void> updateUserProfile(UserModel user) async {
+    try {
+      print("FirestoreService: Updating profile for user ${user.id}...");
+      await _firestore.collection('users').doc(user.id).update(user.toJson());
+      print("FirestoreService: Profile updated successfully.");
+    } catch (e) {
+      print("FirestoreService: Error updating user profile: $e");
+      rethrow;
+    }
+  }
+
   Future<UserModel?> getUserProfile(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
     if (doc.exists) {

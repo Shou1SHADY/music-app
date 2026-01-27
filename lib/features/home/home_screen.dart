@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants.dart';
 import '../musicians/musician_list_screen.dart';
 import '../studios/studio_list_screen.dart';
@@ -26,20 +27,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0F0F1E),
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppColors.background,
-          border:
-              Border(top: BorderSide(color: Colors.white.withOpacity(0.04))),
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFF0F0F1E),
+              const Color(0xFF1A1A2E),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          border: Border(
+            top: BorderSide(
+              color: AppColors.primary.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
+              color: AppColors.primary.withOpacity(0.15),
+              blurRadius: 20,
               offset: const Offset(0, -5),
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
             ),
           ],
         ),
@@ -47,56 +65,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           data: NavigationBarThemeData(
             labelTextStyle: MaterialStateProperty.resolveWith((states) {
               if (states.contains(MaterialState.selected)) {
-                return const TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold);
+                return GoogleFonts.outfit(
+                  color: AppColors.primary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                );
               }
-              return const TextStyle(color: AppColors.textMuted, fontSize: 12);
+              return GoogleFonts.outfit(
+                color: Colors.white.withOpacity(0.5),
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              );
             }),
             iconTheme: MaterialStateProperty.resolveWith((states) {
               if (states.contains(MaterialState.selected)) {
-                return const IconThemeData(color: AppColors.primary);
+                return const IconThemeData(
+                  color: AppColors.primary,
+                  size: 24,
+                );
               }
-              return const IconThemeData(color: AppColors.textMuted);
+              return IconThemeData(
+                color: Colors.white.withOpacity(0.5),
+                size: 24,
+              );
             }),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
           ),
           child: NavigationBar(
             selectedIndex: _currentIndex,
-            onDestinationSelected: (index) =>
-                setState(() => _currentIndex = index),
-            backgroundColor: AppColors.background,
-            indicatorColor: AppColors.primary.withOpacity(0.08),
-            height: 75,
-            elevation: 0,
-            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            onDestinationSelected: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
             destinations: const [
               NavigationDestination(
-                icon: Icon(Icons.explore_outlined,
-                    size: 24, color: AppColors.textMuted),
-                selectedIcon: Icon(Icons.explore_rounded,
-                    size: 24, color: AppColors.primary),
-                label: 'Community',
+                icon: Icon(Icons.people_rounded),
+                label: 'Musicians',
               ),
               NavigationDestination(
-                icon: Icon(Icons.music_note_outlined,
-                    size: 24, color: AppColors.textMuted),
-                selectedIcon: Icon(Icons.music_note_rounded,
-                    size: 24, color: AppColors.primary),
+                icon: Icon(Icons.music_note_rounded),
                 label: 'Studios',
               ),
               NavigationDestination(
-                icon: Icon(Icons.chat_bubble_outline,
-                    size: 24, color: AppColors.textMuted),
-                selectedIcon: Icon(Icons.chat_bubble_rounded,
-                    size: 24, color: AppColors.primary),
-                label: 'Messages',
+                icon: Icon(Icons.chat_rounded),
+                label: 'Chat',
               ),
               NavigationDestination(
-                icon: Icon(Icons.person_outline,
-                    size: 24, color: AppColors.textMuted),
-                selectedIcon: Icon(Icons.person_rounded,
-                    size: 24, color: AppColors.primary),
+                icon: Icon(Icons.person_rounded),
                 label: 'Profile',
               ),
             ],
