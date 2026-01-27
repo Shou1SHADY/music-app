@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,10 +26,21 @@ class ChatDetailScreen extends ConsumerStatefulWidget {
 class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   final _messageController = TextEditingController();
   final List<MessageModel> _optimisticMessages = [];
+  Timer? _timeagoTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Refresh timeago every minute
+    _timeagoTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
 
   @override
   void dispose() {
     _messageController.dispose();
+    _timeagoTimer?.cancel();
     super.dispose();
   }
 
