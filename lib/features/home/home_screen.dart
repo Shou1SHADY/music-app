@@ -21,7 +21,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     const MusicianListScreen(),
     const StudioListScreen(),
     const ChatListScreen(),
-    const UserProfileScreen(),
+    UserProfileScreen(),
   ];
 
   @override

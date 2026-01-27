@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../models/studio_model.dart';
 import '../../services/firestore_service.dart';
 import '../../core/constants.dart';
-import 'studio_detail_screen.dart';
 
 final studiosProvider = StreamProvider<List<StudioModel>>((ref) {
   return ref.watch(firestoreServiceProvider).getStudios();
@@ -22,7 +21,6 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
   String _selectedCity = 'All';
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
-  bool _showLocation = false;
 
   @override
   void dispose() {
@@ -32,11 +30,9 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
 
   List<StudioModel> _filterStudios(List<StudioModel> studios) {
     return studios.where((s) {
-      // Filter by city
       if (_selectedCity != 'All' && s.city != _selectedCity) {
         return false;
       }
-      // Filter by search query
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
         final nameMatch = s.name.toLowerCase().contains(query);
@@ -56,19 +52,51 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
     final studiosAsync = ref.watch(studiosProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0F0F1E),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF0F0F1E),
+        elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Music Studios'),
-            Text('Book rehearsal space in Egypt',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: AppColors.primary, fontSize: 10)),
+            Text(
+              'Music Studios',
+              style: GoogleFonts.outfit(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              'Book rehearsal space in Egypt',
+              style: GoogleFonts.outfit(
+                color: AppColors.primary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
-        actions: const [],
+        actions: [
+          IconButton(
+            icon: Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.tune_rounded,
+                color: AppColors.primary,
+                size: 20,
+              ),
+            ),
+            onPressed: () {
+              // TODO: Show advanced filters
+            },
+          ),
+          SizedBox(width: 8),
+        ],
       ),
       body: Column(
         children: [
@@ -83,15 +111,24 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
                 }
                 return ListView.builder(
                   itemCount: filtered.length,
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16),
                   itemBuilder: (context, index) {
                     final studio = filtered[index];
                     return _buildStudioCard(context, studio);
                   },
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => Center(child: Text('Error: $e')),
+              loading: () => Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primary,
+                ),
+              ),
+              error: (e, st) => Center(
+                child: Text(
+                  'Error: $e',
+                  style: GoogleFonts.outfit(color: Colors.white),
+                ),
+              ),
             ),
           ),
         ],
@@ -101,34 +138,73 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
 
   Widget _buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: TextField(
-        controller: _searchController,
-        onChanged: (value) => setState(() => _searchQuery = value),
-        style: GoogleFonts.outfit(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: 'Search studios, equipment...',
-          hintStyle: GoogleFonts.outfit(color: AppColors.textMuted),
-          prefixIcon:
-              const Icon(Icons.search_rounded, color: AppColors.textMuted),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear_rounded,
-                      color: AppColors.textMuted),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() => _searchQuery = '');
-                  },
-                )
-              : null,
-          filled: true,
-          fillColor: AppColors.surface,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A2E),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.primary.withOpacity(0.2),
+            width: 1,
           ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.1),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: TextField(
+          controller: _searchController,
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Search studios, equipment...',
+            hintStyle: GoogleFonts.outfit(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: 16,
+            ),
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              color: AppColors.primary,
+              size: 24,
+            ),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: Icon(
+                      Icons.clear_rounded,
+                      color: Colors.white.withOpacity(0.6),
+                    ),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() => _searchQuery = '');
+                    },
+                  )
+                : null,
+            filled: true,
+            fillColor: Colors.transparent,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: AppColors.primary,
+                width: 2,
+              ),
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          ),
+          onChanged: (value) => setState(() => _searchQuery = value),
         ),
       ),
     );
@@ -136,213 +212,68 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
 
   Widget _buildCityFilter() {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        border: Border(
-          bottom: BorderSide(color: Colors.white.withOpacity(0.03)),
-        ),
-      ),
+      padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-            child: Row(
-              children: [
-                _buildCategoryToggle(
-                  label: 'Location',
-                  isSelected: _showLocation,
-                  activeValue: _selectedCity != 'All' ? _selectedCity : null,
-                  icon: Icons.location_on_rounded,
-                  onTap: () => setState(() {
-                    _showLocation = !_showLocation;
-                  }),
-                ),
-              ],
-            ),
-          ),
-          if (_showLocation)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _buildFilterSection(
-                '',
-                AppConstants.egyptCities,
-                _selectedCity,
-                (val) => setState(() => _selectedCity = val),
-                icon: Icons.location_on_rounded,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryToggle({
-    required String label,
-    required bool isSelected,
-    required String? activeValue,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    final hasActiveValue = activeValue != null;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withOpacity(0.15)
-              : AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.primary
-                : hasActiveValue
-                    ? AppColors.primary.withOpacity(0.5)
-                    : Colors.white.withOpacity(0.05),
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected || hasActiveValue
-                  ? AppColors.primary
-                  : AppColors.textMuted,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              hasActiveValue ? activeValue : label,
-              style: GoogleFonts.outfit(
-                fontSize: 14,
-                fontWeight: isSelected || hasActiveValue
-                    ? FontWeight.w700
-                    : FontWeight.w500,
-                color: isSelected || hasActiveValue
-                    ? Colors.white
-                    : AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              isSelected
-                  ? Icons.keyboard_arrow_up_rounded
-                  : Icons.keyboard_arrow_down_rounded,
-              size: 18,
-              color: isSelected || hasActiveValue
-                  ? AppColors.primary
-                  : AppColors.textMuted,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterSection(String title, List<String> items,
-      String selectedValue, Function(String) onSelected,
-      {IconData? icon}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (title.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-            child: Text(
-              title,
-              style: GoogleFonts.outfit(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                color: AppColors.primary.withOpacity(0.6),
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
-        SizedBox(
-          height: 42,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: items.length + 1,
-            itemBuilder: (context, index) {
-              final label = index == 0 ? 'All' : items[index - 1];
-              final isSelected = selectedValue == label;
-              return _buildPremiumChip(
-                label: label,
-                isSelected: isSelected,
-                icon: (index > 0) ? icon : null,
-                onTap: () => onSelected(label),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPremiumChip({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-    IconData? icon,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutQuad,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected
-                  ? AppColors.primary
-                  : Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withOpacity(0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    )
-                  ]
-                : [],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
+          Row(
             children: [
-              if (icon != null) ...[
-                Icon(
-                  icon,
-                  size: 13,
-                  color: isSelected ? AppColors.onPrimary : AppColors.primary,
-                ),
-                const SizedBox(width: 6),
-              ],
+              Icon(
+                Icons.location_on_rounded,
+                color: AppColors.primary,
+                size: 20,
+              ),
+              SizedBox(width: 8),
               Text(
-                label,
+                'Location',
                 style: GoogleFonts.outfit(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected
-                      ? AppColors.onPrimary
-                      : AppColors.textSecondary,
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-        ),
+          SizedBox(height: 12),
+          SizedBox(
+            height: 40,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: AppConstants.egyptCities.length + 1,
+              itemBuilder: (context, index) {
+                final city = index == 0 ? 'All' : AppConstants.egyptCities[index - 1];
+                final isSelected = _selectedCity == city;
+                return Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: Text(
+                      city,
+                      style: GoogleFonts.outfit(
+                        color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                        fontSize: 14,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      ),
+                    ),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() => _selectedCity = city);
+                    },
+                    backgroundColor: const Color(0xFF1A1A2E),
+                    selectedColor: AppColors.primary,
+                    checkmarkColor: Colors.white,
+                    side: BorderSide(
+                      color: isSelected ? AppColors.primary : AppColors.primary.withOpacity(0.3),
+                      width: 1,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -352,44 +283,27 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.house_siding_rounded,
-                size: 48, color: AppColors.textMuted),
+          Icon(
+            Icons.search_off_rounded,
+            size: 64,
+            color: AppColors.primary.withOpacity(0.5),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 16),
           Text(
-            'No Studios Found',
+            'No studios found',
             style: GoogleFonts.outfit(
-              fontWeight: FontWeight.bold,
               fontSize: 20,
-              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             'Try adjusting your search or filters',
             style: GoogleFonts.outfit(
-              color: AppColors.textSecondary,
               fontSize: 14,
+              color: Colors.white.withOpacity(0.6),
             ),
-          ),
-          const SizedBox(height: 24),
-          TextButton.icon(
-            onPressed: () {
-              setState(() {
-                _selectedCity = 'All';
-                _searchQuery = '';
-                _searchController.clear();
-                _showLocation = false;
-              });
-            },
-            icon: const Icon(Icons.refresh_rounded),
-            label: const Text('Clear Filters'),
           ),
         ],
       ),
@@ -398,202 +312,267 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
 
   Widget _buildStudioCard(BuildContext context, StudioModel studio) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
+      margin: EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF1A1A2E).withOpacity(0.8),
+            const Color(0xFF16213E).withOpacity(0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.2),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 30,
-            offset: const Offset(0, 15),
+            color: AppColors.primary.withOpacity(0.15),
+            blurRadius: 20,
+            offset: Offset(0, 10),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
-        child: InkWell(
-          onTap: () {
-            context.push('/studio-detail', extra: studio);
-          },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                children: [
-                  Container(
-                    height: 220,
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withOpacity(0.1),
+                        AppColors.primary.withOpacity(0.05),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    child: studio.images.isNotEmpty
-                        ? Image.network(
-                            studio.images.first,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                              color: AppColors.surface,
-                              child: const Icon(Icons.piano,
-                                  size: 80, color: Colors.white24),
-                            ),
-                          )
-                        : const Center(
-                            child: Icon(Icons.music_video,
-                                size: 48, color: Colors.white12)),
                   ),
-                  _buildPriceTag(studio.pricePerHour),
-                  _buildRatingBadge(studio.rating),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      studio.name,
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 22,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(Icons.location_on,
-                            size: 14,
-                            color: AppColors.primary.withOpacity(0.7)),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            '${studio.city} • ${studio.address}',
-                            style: GoogleFonts.outfit(
-                              color: AppColors.textSecondary,
-                              fontSize: 14,
+                  child: studio.images.isNotEmpty
+                      ? Image.network(
+                          studio.images.first,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Center(
+                            child: Icon(
+                              Icons.piano,
+                              size: 80,
+                              color: AppColors.primary.withOpacity(0.3),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
+                        )
+                      : Center(
+                          child: Icon(
+                            Icons.music_video,
+                            size: 80,
+                            color: AppColors.primary.withOpacity(0.3),
+                          ),
+                        ),
+                ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary,
+                          AppColors.primary.withOpacity(0.8),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.4),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      studio.description,
+                    child: Text(
+                      'EGP ${studio.pricePerHour}/hr',
                       style: GoogleFonts.outfit(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                        height: 1.5,
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 20),
-                    _buildEquipmentList(studio.equipment),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => StudioDetailScreen(studio: studio),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          studio.name,
+                          style: GoogleFonts.outfit(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.star_rounded,
+                              color: AppColors.primary,
+                              size: 16,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              '4.8',
+                              style: GoogleFonts.outfit(
+                                color: AppColors.primary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_rounded,
+                        color: AppColors.primary,
+                        size: 16,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        studio.city,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    studio.description,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white.withOpacity(0.6),
+                      fontSize: 14,
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 16),
+                  SizedBox(
+                    height: 32,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: studio.equipment.take(3).length,
+                      itemBuilder: (context, index) {
+                        final equipment = studio.equipment[index];
+                        return Container(
+                          margin: EdgeInsets.only(right: 8),
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppColors.primary.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            equipment,
+                            style: GoogleFonts.outfit(
+                              color: AppColors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         );
                       },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: const Text('Book Session'),
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPriceTag(double price) {
-    return Positioned(
-      bottom: 16,
-      left: 16,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.background.withOpacity(0.85),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
-        child: Text(
-          '${price.toStringAsFixed(0)} EGP/hr',
-          style: GoogleFonts.outfit(
-            color: AppColors.primary,
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRatingBadge(double rating) {
-    return Positioned(
-      top: 16,
-      right: 16,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppColors.background.withOpacity(0.85),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.accent.withOpacity(0.2)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.star_rounded, color: AppColors.accent, size: 16),
-            const SizedBox(width: 4),
-            Text(
-              rating.toString(),
-              style: GoogleFonts.outfit(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            context.push('/studio-detail', extra: studio);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: AppColors.primary,
+                            side: BorderSide(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            'View Details',
+                            style: GoogleFonts.outfit(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // TODO: Open booking sheet
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            'Book Now',
+                            style: GoogleFonts.outfit(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildEquipmentList(List<String> equipment) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: equipment
-          .take(3)
-          .map((e) => Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.04),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  e,
-                  style: GoogleFonts.outfit(
-                      fontSize: 11, color: AppColors.textSecondary),
-                ),
-              ))
-          .toList(),
     );
   }
 }

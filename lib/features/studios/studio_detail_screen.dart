@@ -3,8 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants.dart';
 import '../../models/studio_model.dart';
-import '../bookings/booking_sheet.dart';
-import '../reviews/review_widgets.dart';
 
 class StudioDetailScreen extends StatefulWidget {
   final StudioModel studio;
@@ -32,13 +30,13 @@ class _StudioDetailScreenState extends State<StudioDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFF0F0F1E),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
-            backgroundColor: AppColors.background,
+            backgroundColor: const Color(0xFF0F0F1E),
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -47,17 +45,41 @@ class _StudioDetailScreenState extends State<StudioDetailScreen> {
                       ? Image.network(
                           widget.studio.images.first,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                            color: AppColors.surface,
-                            child: const Icon(Icons.piano,
-                                size: 80, color: Colors.white24),
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primary.withOpacity(0.2),
+                                  AppColors.primary.withOpacity(0.1),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.piano,
+                              size: 80,
+                              color: AppColors.primary.withOpacity(0.3),
+                            ),
                           ),
                         )
                       : Container(
-                          color: AppColors.surface,
-                          child: const Icon(Icons.piano,
-                              size: 80, color: Colors.white24)),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.primary.withOpacity(0.2),
+                                AppColors.primary.withOpacity(0.1),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.music_video,
+                            size: 80,
+                            color: AppColors.primary.withOpacity(0.3),
+                          ),
+                        ),
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -65,382 +87,466 @@ class _StudioDetailScreenState extends State<StudioDetailScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          AppColors.background.withOpacity(0.9),
-                          AppColors.background,
+                          Colors.transparent,
+                          const Color(0xFF0F0F1E).withOpacity(0.8),
+                          const Color(0xFF0F0F1E),
                         ],
-                        stops: const [0.6, 0.9, 1.0],
+                        stops: const [0.0, 0.4, 0.7, 1.0],
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            leading: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: CircleAvatar(
-                backgroundColor: Colors.black45,
-                child: IconButton(
-                  icon:
-                      const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-            ),
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: CircleAvatar(
-                  backgroundColor: Colors.black45,
-                  child: IconButton(
-                    icon: const Icon(Icons.share_rounded, color: Colors.white),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Share functionality coming soon!')),
-                      );
-                    },
+              IconButton(
+                icon: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.share_rounded,
+                    color: Colors.white,
+                    size: 20,
                   ),
                 ),
+                onPressed: () {
+                  // TODO: Share functionality
+                },
               ),
+              IconButton(
+                icon: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.favorite_border_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                onPressed: () {
+                  // TODO: Favorite functionality
+                },
+              ),
+              SizedBox(width: 8),
             ],
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          widget.studio.name,
-                          style: GoogleFonts.outfit(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                              color: AppColors.primary.withOpacity(0.3)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.star_rounded,
-                                color: AppColors.accent, size: 18),
-                            const SizedBox(width: 4),
-                            Text(
-                              widget.studio.rating.toString(),
-                              style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
-                            ),
-                            Text(
-                              ' (${widget.studio.reviewCount})',
-                              style: GoogleFonts.outfit(
-                                  color: AppColors.textMuted, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  InkWell(
-                    onTap: _openInMaps,
-                    child: Row(
-                      children: [
-                        const Icon(Icons.location_on_outlined,
-                            color: AppColors.textSecondary, size: 16),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            '${widget.studio.city} • ${widget.studio.address}',
-                            style: GoogleFonts.outfit(
-                                color: AppColors.primary, fontSize: 14),
-                          ),
-                        ),
-                        const Icon(Icons.open_in_new_rounded,
-                            color: AppColors.primary, size: 14),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Quick Stats
-                  _buildQuickStats(),
-                  const SizedBox(height: 24),
-
-                  _buildSectionTitle('About'),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.studio.description,
-                    style: GoogleFonts.outfit(
-                        color: AppColors.textSecondary,
-                        height: 1.6,
-                        fontSize: 15),
-                  ),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle('Equipment'),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: widget.studio.equipment
-                        .map((e) => Chip(
-                              avatar: const Icon(Icons.check_circle_rounded,
-                                  size: 16, color: AppColors.success),
-                              label: Text(e,
-                                  style: GoogleFonts.outfit(
-                                      color: AppColors.textPrimary,
-                                      fontSize: 13)),
-                              backgroundColor: AppColors.surface,
-                              padding: const EdgeInsets.all(8),
-                            ))
-                        .toList(),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Reviews Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildSectionTitle('Reviews'),
-                      TextButton.icon(
-                        onPressed: () {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (_) =>
-                                WriteReviewSheet(studioId: widget.studio.id),
-                          );
-                        },
-                        icon: const Icon(Icons.rate_review_rounded, size: 16),
-                        label: const Text('Write Review'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ReviewList(studioId: widget.studio.id),
-                  const SizedBox(height: 32),
-
-                  _buildSectionTitle('Location'),
-                  const SizedBox(height: 12),
-                  _buildMapSection(),
-                  const SizedBox(height: 100), // Space for fab
+                  _buildStudioInfo(),
+                  SizedBox(height: 32),
+                  _buildActionButtons(),
+                  SizedBox(height: 32),
+                  _buildDescription(),
+                  SizedBox(height: 32),
+                  _buildEquipmentSection(),
+                  SizedBox(height: 32),
+                  _buildLocationSection(),
+                  SizedBox(height: 32),
+                  _buildReviewsSection(),
+                  SizedBox(height: 100),
                 ],
               ),
             ),
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          border:
-              Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Price',
-                      style: GoogleFonts.outfit(
-                          color: AppColors.textMuted, fontSize: 12)),
-                  Text(
-                    '${widget.studio.pricePerHour.toStringAsFixed(0)} EGP',
-                    style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  Text('/ hour',
-                      style: GoogleFonts.outfit(
-                          color: AppColors.textSecondary, fontSize: 12)),
-                ],
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (_) => BookingSheet(studio: widget.studio),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.background,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: Text('Book Now',
-                      style: GoogleFonts.outfit(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
+    );
+  }
+
+  Widget _buildStudioInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                widget.studio.name,
+                style: GoogleFonts.outfit(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
                 ),
               ),
-            ],
-          ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withOpacity(0.8),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.4),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Text(
+                'EGP ${widget.studio.pricePerHour}/hr',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildQuickStats() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatItem(
-            icon: Icons.star_rounded,
-            value: widget.studio.rating.toString(),
-            label: 'Rating',
-            color: AppColors.accent,
-          ),
-          _buildDivider(),
-          _buildStatItem(
-            icon: Icons.reviews_rounded,
-            value: widget.studio.reviewCount.toString(),
-            label: 'Reviews',
-            color: AppColors.secondary,
-          ),
-          _buildDivider(),
-          _buildStatItem(
-            icon: Icons.build_rounded,
-            value: widget.studio.equipment.length.toString(),
-            label: 'Equipment',
-            color: AppColors.success,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem({
-    required IconData icon,
-    required String value,
-    required String label,
-    required Color color,
-  }) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: GoogleFonts.outfit(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.outfit(
-            color: AppColors.textMuted,
-            fontSize: 12,
-          ),
+        SizedBox(height: 16),
+        Row(
+          children: [
+            Icon(
+              Icons.location_on_rounded,
+              color: AppColors.primary,
+              size: 20,
+            ),
+            SizedBox(width: 8),
+            Text(
+              widget.studio.city,
+              style: GoogleFonts.outfit(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(width: 20),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.star_rounded,
+                    color: AppColors.primary,
+                    size: 16,
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    '4.8',
+                    style: GoogleFonts.outfit(
+                      color: AppColors.primary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildDivider() {
-    return Container(
-      height: 40,
-      width: 1,
-      color: Colors.white.withOpacity(0.1),
-    );
-  }
-
-  Widget _buildMapSection() {
-    return Column(
+  Widget _buildActionButtons() {
+    return Row(
       children: [
-        Container(
-          height: 200,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Center(
-            child: Column(
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _openInMaps,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: AppColors.primary,
+              side: BorderSide(
+                color: AppColors.primary,
+                width: 2,
+              ),
+              padding: EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.location_on_rounded,
-                    size: 40, color: AppColors.primary),
-                const SizedBox(height: 12),
-                Text(
-                  "Location Preview",
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Icon(
+                  Icons.map_rounded,
+                  size: 20,
                 ),
-                const SizedBox(height: 4),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    widget.studio.address,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(
-                      color: AppColors.textMuted,
-                      fontSize: 12,
-                    ),
+                SizedBox(width: 8),
+                Text(
+                  'View on Map',
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 12),
-        OutlinedButton.icon(
-          onPressed: _openInMaps,
-          icon: const Icon(Icons.directions_rounded),
-          label: const Text('Get Directions'),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.primary,
-            minimumSize: const Size(double.infinity, 48),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        SizedBox(width: 16),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () {
+              // TODO: Open booking sheet
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.calendar_today_rounded,
+                  size: 20,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  'Book Now',
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: GoogleFonts.outfit(
-          fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+  Widget _buildDescription() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'About',
+          style: GoogleFonts.outfit(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 12),
+        Text(
+          widget.studio.description,
+          style: GoogleFonts.outfit(
+            color: Colors.white.withOpacity(0.7),
+            fontSize: 16,
+            height: 1.6,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEquipmentSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Equipment',
+          style: GoogleFonts.outfit(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: widget.studio.equipment.map((equipment) {
+            return Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.2),
+                    AppColors.primary.withOpacity(0.1),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.primary.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                equipment,
+                style: GoogleFonts.outfit(
+                  color: AppColors.primary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocationSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Location',
+          style: GoogleFonts.outfit(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 16),
+        Container(
+          height: 200,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF1A1A2E),
+                Color(0xFF16213E),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.primary.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.location_on_rounded,
+                  color: AppColors.primary,
+                  size: 48,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  widget.studio.city,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Tap to view on map',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReviewsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Reviews',
+          style: GoogleFonts.outfit(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 16),
+        Container(
+          padding: EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF1A1A2E),
+                Color(0xFF16213E),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.primary.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Text(
+                    '4.8',
+                    style: GoogleFonts.outfit(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: List.generate(5, (index) {
+                          return Icon(
+                            index < 4 ? Icons.star_rounded : Icons.star_border_rounded,
+                            color: AppColors.primary,
+                            size: 20,
+                          );
+                        }),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Based on 24 reviews',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
+              Text(
+                'No reviews yet. Be the first to review this studio!',
+                style: GoogleFonts.outfit(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
