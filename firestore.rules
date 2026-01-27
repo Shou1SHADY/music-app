@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is the owner
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Users collection
+    // - Any authenticated user can read profiles
+    // - Users can only write to their own profile
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update, delete: if isOwner(userId);
+    }
+    
+    // Studios collection
+    // - Any authenticated user can read studios
+    // - Only studio owner can create/update/delete their studio
+    match /studios/{studioId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && 
+        request.auth.uid == resource.data.ownerId;
+    }
+    
+    // Bookings collection
+    // - Users can read their own bookings
+    // - Studio owners can read bookings for their studios
+    // - Authenticated users can create bookings
+    // - Only booking owner can update/cancel their booking
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == resource.data.studioOwnerId
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == resource.data.studioOwnerId
+      );
+      allow delete: if request.auth.uid == resource.data.userId;
+    }
+
+    // Reviews collection
+    // - Public read
+    // - Authenticated create
+    // - Owner delete
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow delete: if request.auth.uid == resource.data.userId;
+    }
+    
+    // Chats collection
+    // - Only participants can read/write to their chats
+    match /chats/{chatId} {
+      allow read, write: if isAuthenticated() && 
+        request.auth.uid in resource.data.participants;
+      allow create: if isAuthenticated();
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && 
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isAuthenticated() && 
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow update: if isAuthenticated() && 
+          request.auth.uid == resource.data.receiverId; // For marking as read
+      }
+    }
+  }
+}

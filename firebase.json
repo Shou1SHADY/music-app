@@ -1,0 +1,43 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "musicfinder-1e651",
+                    "appId": "1:1014051549145:android:e1b26b02820a0c614273c8",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "musicfinder-1e651",
+                    "configurations": {
+                        "android": "1:1014051549145:android:e1b26b02820a0c614273c8",
+                        "ios": "1:1014051549145:ios:d5ffa6540d7e55384273c8",
+                        "macos": "1:1014051549145:ios:d5ffa6540d7e55384273c8",
+                        "web": "1:1014051549145:web:5045a56a7f0f23f54273c8",
+                        "windows": "1:1014051549145:web:1a37f17af79159e34273c8"
+                    }
+                }
+            }
+        }
+    },
+    "firestore": {
+        "rules": "firestore.rules",
+        "indexes": "firestore.indexes.json"
+    },
+    "hosting": {
+        "public": "build/web",
+        "ignore": [
+            "firebase.json",
+            "**/.*",
+            "**/node_modules/**"
+        ],
+        "rewrites": [
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ]
+    }
+}
