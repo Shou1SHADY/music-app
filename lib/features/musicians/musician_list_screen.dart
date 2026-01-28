@@ -296,7 +296,7 @@ class _MusicianListScreenState extends ConsumerState<MusicianListScreen> {
             ),
           ),
         SizedBox(
-          height: 42,
+          height: 48, // Increased height to accommodate text
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -304,11 +304,14 @@ class _MusicianListScreenState extends ConsumerState<MusicianListScreen> {
             itemBuilder: (context, index) {
               final label = index == 0 ? 'All' : items[index - 1];
               final isSelected = selectedValue == label;
-              return _buildPremiumChip(
-                label: label,
-                isSelected: isSelected,
-                icon: (index > 0) ? icon : null,
-                onTap: () => onSelected(label),
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: _buildPremiumChip(
+                  label: label,
+                  isSelected: isSelected,
+                  icon: (index > 0) ? icon : null,
+                  onTap: () => onSelected(label),
+                ),
               );
             },
           ),
@@ -323,57 +326,58 @@ class _MusicianListScreenState extends ConsumerState<MusicianListScreen> {
     required VoidCallback onTap,
     IconData? icon,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutQuad,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected
-                  ? AppColors.primary
-                  : Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withOpacity(0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    )
-                  ]
-                : [],
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutQuad,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary
+                : Colors.white.withOpacity(0.1),
+            width: 1,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) ...[
-                Icon(
-                  icon,
-                  size: 13,
-                  color: isSelected ? AppColors.onPrimary : AppColors.primary,
-                ),
-                const SizedBox(width: 6),
-              ],
-              Text(
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 12,
+                color: isSelected ? AppColors.onPrimary : AppColors.primary,
+              ),
+              const SizedBox(width: 6),
+            ],
+            Flexible(
+              child: Text(
                 label,
                 style: GoogleFonts.outfit(
-                  fontSize: 13,
+                  fontSize: 11, // Smaller font to prevent overflow
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected
                       ? AppColors.onPrimary
                       : AppColors.textSecondary,
                 ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

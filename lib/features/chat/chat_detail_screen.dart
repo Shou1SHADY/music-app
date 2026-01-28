@@ -1,13 +1,17 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:image_picker/image_picker.dart';
 import 'chat_service.dart';
 import '../auth/auth_service.dart';
 import '../../core/constants.dart';
 import '../../models/message_model.dart';
 import '../../models/user_model.dart';
+import '../../services/presence_service.dart';
 
 class ChatDetailScreen extends ConsumerStatefulWidget {
   final String chatId;
@@ -27,6 +31,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   final _messageController = TextEditingController();
   final List<MessageModel> _optimisticMessages = [];
   Timer? _timeagoTimer;
+  final ImagePicker _imagePicker = ImagePicker();
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -37,12 +43,40 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     _timeagoTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (mounted) setState(() {});
     });
+    
+    // Set user as online when opening chat
+    _setUserOnline();
+    // Mark all messages as read when opening chat
+    _markAllMessagesAsRead();
+  }
+
+  void _setUserOnline() async {
+    final currentUser = ref.read(authServiceProvider).currentUser;
+    if (currentUser != null) {
+      await ref.read(presenceServiceProvider).updateUserPresence(currentUser.uid, isOnline: true);
+    }
+  }
+
+  void _setUserOffline() async {
+    if (!mounted) return;
+    final currentUser = ref.read(authServiceProvider).currentUser;
+    if (currentUser != null) {
+      await ref.read(presenceServiceProvider).setUserOffline(currentUser.uid);
+    }
+  }
+
+  void _markAllMessagesAsRead() async {
+    final currentUser = ref.read(authServiceProvider).currentUser;
+    if (currentUser != null) {
+      await ref.read(chatServiceProvider).markAllMessagesAsRead(widget.chatId, currentUser.uid);
+    }
   }
 
   @override
   void dispose() {
     _messageController.dispose();
     _timeagoTimer?.cancel();
+    _setUserOffline();
     super.dispose();
   }
 
@@ -50,26 +84,185 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
-    final currentUser = ref.read(authServiceProvider).currentUser;
-    if (currentUser == null) return;
-
-    // Optimistic insertion
-    final optimistic = MessageModel(
-      id: 'optimistic_${DateTime.now().millisecondsSinceEpoch}',
+    final currentUser = ref.read(authServiceProvider).currentUser!;
+    final message = MessageModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
       senderId: currentUser.uid,
       receiverId: widget.otherUser.id,
       content: text,
       timestamp: DateTime.now(),
       isRead: false,
     );
+
     setState(() {
-      _optimisticMessages.insert(0, optimistic);
+      _optimisticMessages.insert(0, message);
     });
 
-    ref
-        .read(chatServiceProvider)
-        .sendMessage(widget.chatId, currentUser.uid, text);
+    ref.read(chatServiceProvider).sendMessage(
+          widget.chatId,
+          currentUser.uid,
+          text,
+          imageUrl: null,
+        );
+
     _messageController.clear();
+  }
+
+  Future<void> _sendImage() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
+      );
+
+      if (image == null) return;
+
+      setState(() => _isUploading = true);
+
+      final currentUser = ref.read(authServiceProvider).currentUser!;
+
+      // For now, we'll send the image as a file path
+      // In a real app, you'd upload to Firebase Storage first
+      final message = MessageModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        senderId: currentUser.uid,
+        receiverId: widget.otherUser.id,
+        content: '[Image: ${image.name}]',
+        timestamp: DateTime.now(),
+        isRead: false,
+        imageUrl: image.path, // This would be the Firebase Storage URL
+      );
+
+      setState(() {
+        _optimisticMessages.insert(0, message);
+      });
+
+      // TODO: Upload image to Firebase Storage and get URL
+      // For now, we'll just send the message with local path
+      await ref.read(chatServiceProvider).sendMessage(
+            widget.chatId,
+            currentUser.uid,
+            '[Image: ${image.name}]',
+            imageUrl: image.path,
+          );
+
+      if (mounted) {
+        setState(() => _isUploading = false);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isUploading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send image: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showMediaOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A2E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Share Media',
+              style: GoogleFonts.outfit(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: Icon(Icons.photo_library, color: AppColors.primary),
+              title: Text(
+                'Photo from Gallery',
+                style: GoogleFonts.outfit(color: Colors.white),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _sendImage();
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt, color: AppColors.primary),
+              title: Text(
+                'Take Photo',
+                style: GoogleFonts.outfit(color: Colors.white),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _takePhoto();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _takePhoto() async {
+    try {
+      final XFile? photo = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
+      );
+
+      if (photo == null) return;
+
+      setState(() => _isUploading = true);
+
+      final currentUser = ref.read(authServiceProvider).currentUser!;
+
+      final message = MessageModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        senderId: currentUser.uid,
+        receiverId: widget.otherUser.id,
+        content: '[Photo: ${photo.name}]',
+        timestamp: DateTime.now(),
+        isRead: false,
+        imageUrl: photo.path,
+      );
+
+      setState(() {
+        _optimisticMessages.insert(0, message);
+      });
+
+      await ref.read(chatServiceProvider).sendMessage(
+            widget.chatId,
+            currentUser.uid,
+            '[Photo: ${photo.name}]',
+            imageUrl: photo.path,
+          );
+
+      if (mounted) {
+        setState(() => _isUploading = false);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isUploading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to take photo: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -171,13 +364,32 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      'Active now',
-                      style: GoogleFonts.outfit(
-                        fontSize: 12,
-                        color: Colors.greenAccent,
-                        fontWeight: FontWeight.w400,
-                      ),
+                    StreamBuilder<DocumentSnapshot>(
+                      stream: ref.read(presenceServiceProvider).getUserPresenceStream(widget.otherUser.id),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data!.exists) {
+                          final data = snapshot.data!.data() as Map<String, dynamic>?;
+                          final isOnline = data?['isOnline'] == true;
+                          final lastSeen = (data?['lastSeen'] as Timestamp?)?.toDate();
+                          
+                          return Text(
+                            isOnline ? 'Active now' : 'Last seen ${ref.read(presenceServiceProvider).formatLastSeen(lastSeen)}',
+                            style: GoogleFonts.outfit(
+                              fontSize: 12,
+                              color: isOnline ? Colors.greenAccent : Colors.white.withOpacity(0.6),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          );
+                        }
+                        return Text(
+                          'Checking status...',
+                          style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            color: Colors.white.withOpacity(0.6),
+                            fontWeight: FontWeight.w400,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -341,23 +553,70 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             crossAxisAlignment:
                 isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
-              Text(
-                message.content,
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  height: 1.3,
+              // Show image if present
+              if (message.imageUrl != null) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    File(message.imageUrl!),
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.broken_image,
+                          color: Colors.white.withOpacity(0.6),
+                          size: 40,
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _formatMessageTime(message.timestamp),
-                style: GoogleFonts.outfit(
-                  color: Colors.white.withOpacity(0.6),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
+                if (message.content != '[Image: ${message.imageUrl!.split('/').last}]' && 
+                    message.content != '[Photo: ${message.imageUrl!.split('/').last}]')
+                  const SizedBox(height: 8),
+              ],
+              // Show text content if it's not just an image placeholder
+              if (!message.content.startsWith('[Image:') && 
+                  !message.content.startsWith('[Photo:')) ...[
+                Text(
+                  message.content,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    height: 1.3,
+                  ),
                 ),
+                const SizedBox(height: 4),
+              ],
+              Row(
+                mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                children: [
+                  Text(
+                    _formatMessageTime(message.timestamp),
+                    style: GoogleFonts.outfit(
+                      color: Colors.white.withOpacity(0.6),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  if (isMe) ...[
+                    SizedBox(width: 4),
+                    Icon(
+                      message.isRead ? Icons.done_all_rounded : Icons.done_rounded,
+                      color: message.isRead ? Colors.blue : Colors.white.withOpacity(0.6),
+                      size: 14,
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
@@ -410,14 +669,23 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                       horizontal: 16,
                       vertical: 12,
                     ),
-                    prefixIcon: IconButton(
-                      icon: Icon(
-                        Icons.add_circle_outline,
-                        color: Colors.white.withOpacity(0.6),
-                        size: 24,
-                      ),
-                      onPressed: () {},
-                    ),
+                    prefixIcon: _isUploading
+                        ? Container(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                            ),
+                          )
+                        : IconButton(
+                            icon: Icon(
+                              Icons.add_circle_outline,
+                              color: Colors.white.withOpacity(0.6),
+                              size: 24,
+                            ),
+                            onPressed: _showMediaOptions,
+                          ),
                   ),
                 ),
               ),

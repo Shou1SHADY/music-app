@@ -5,6 +5,7 @@ import '../../models/booking_model.dart';
 import '../../models/studio_model.dart';
 import '../../models/user_model.dart';
 import '../../services/firestore_service.dart';
+import '../../services/notification_service.dart';
 import '../auth/auth_service.dart';
 
 final bookingServiceProvider = Provider<BookingService>((ref) {
@@ -17,6 +18,23 @@ class BookingService {
   final Uuid _uuid = const Uuid();
 
   BookingService(this._firestore, this._ref);
+
+  Future<bool> checkAvailability(String studioId, DateTime startTime, DateTime endTime) async {
+    final bookings = await _firestore
+        .collection('bookings')
+        .where('studioId', isEqualTo: studioId)
+        .where('status', whereIn: ['pending', 'approved'])
+        .get();
+
+    for (final doc in bookings.docs) {
+      final booking = BookingModel.fromJson(doc.data());
+      // Check if there's any overlap
+      if (!(endTime.isBefore(booking.startTime) || startTime.isAfter(booking.endTime))) {
+        return false; // Not available
+      }
+    }
+    return true; // Available
+  }
 
   Future<void> createBooking(String studioId, String studioName,
       DateTime startTime, DateTime endTime, double pricePerHour) async {
@@ -48,6 +66,27 @@ class BookingService {
         .collection('bookings')
         .doc(booking.id)
         .set(booking.toJson());
+
+    // Send notifications
+    try {
+      // Send booking confirmation to user
+      await _ref.read(notificationServiceProvider).sendBookingConfirmation(
+            userId: user.uid,
+            studioId: studioId,
+            studioName: studioName,
+            startTime: startTime,
+            endTime: endTime,
+            totalPrice: totalPrice,
+          );
+
+      // Send booking request to studio owner (you'd need to get studio owner ID)
+      // For now, we'll skip this as we don't have studio owner info
+      // await _ref.read(notificationServiceProvider).sendBookingRequest(...);
+
+    } catch (e) {
+      // Log error but don't fail the booking
+      print('Error sending notifications: $e');
+    }
   }
 
   Stream<List<BookingModel>> getUserBookings(String userId) {
@@ -57,11 +96,27 @@ class BookingService {
         .snapshots()
         .map((snapshot) {
       final bookings = snapshot.docs
-          .map((doc) => BookingModel.fromJson(doc.data()))
+          .map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id; // Ensure document ID is included
+            return BookingModel.fromJson(data);
+          })
           .toList();
       // Sort client-side to avoid needing a composite index
       bookings.sort((a, b) => a.startTime.compareTo(b.startTime));
       return bookings;
     });
+  }
+
+  Future<void> cancelBooking(String bookingId) async {
+    try {
+      await _firestore
+          .collection('bookings')
+          .doc(bookingId)
+          .update({'status': 'cancelled'});
+    } catch (e) {
+      print("Firestore error in cancelBooking: $e");
+      rethrow;
+    }
   }
 }

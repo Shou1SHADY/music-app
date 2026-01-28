@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants.dart';
 import '../../models/studio_model.dart';
+import '../bookings/booking_sheet.dart';
 
 class StudioDetailScreen extends StatefulWidget {
   final StudioModel studio;
@@ -25,6 +27,15 @@ class _StudioDetailScreenState extends State<StudioDetailScreen> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
+  }
+
+  void _openBookingSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BookingSheet(studio: widget.studio),
+    );
   }
 
   @override
@@ -299,7 +310,7 @@ class _StudioDetailScreenState extends State<StudioDetailScreen> {
         Expanded(
           child: ElevatedButton(
             onPressed: () {
-              // TODO: Open booking sheet
+              _openBookingSheet();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,

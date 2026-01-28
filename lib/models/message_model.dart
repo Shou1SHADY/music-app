@@ -11,6 +11,7 @@ class MessageModel {
   final String content;
   final DateTime timestamp;
   final bool isRead;
+  final String? imageUrl;
 
   MessageModel({
     required this.id,
@@ -19,6 +20,7 @@ class MessageModel {
     required this.content,
     required this.timestamp,
     this.isRead = false,
+    this.imageUrl,
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class MessageModel {
       content: json['content'] as String? ?? '',
       timestamp: _parseDateTime(json['timestamp']),
       isRead: json['isRead'] as bool? ?? false,
+      imageUrl: json['imageUrl'] as String?,
     );
   }
 
@@ -39,12 +42,15 @@ class MessageModel {
     return DateTime.now();
   }
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'senderId': senderId,
-        'receiverId': receiverId,
-        'content': content,
-        'timestamp': timestamp.toIso8601String(),
-        'isRead': isRead,
-      };
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'senderId': senderId,
+      'receiverId': receiverId,
+      'content': content,
+      'timestamp': Timestamp.fromDate(timestamp),
+      'isRead': isRead,
+      'imageUrl': imageUrl,
+    };
+  }
 }

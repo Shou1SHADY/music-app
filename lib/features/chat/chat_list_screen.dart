@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,8 +8,30 @@ import '../auth/auth_service.dart';
 import '../../core/constants.dart';
 import '../../models/user_model.dart';
 
-class ChatListScreen extends ConsumerWidget {
+class ChatListScreen extends ConsumerStatefulWidget {
   const ChatListScreen({super.key});
+
+  @override
+  ConsumerState<ChatListScreen> createState() => _ChatListScreenState();
+}
+
+class _ChatListScreenState extends ConsumerState<ChatListScreen> {
+  Timer? _timeUpdateTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Update time display every minute
+    _timeUpdateTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timeUpdateTimer?.cancel();
+    super.dispose();
+  }
 
   String _formatMessageTime(DateTime timestamp) {
     final now = DateTime.now();
@@ -42,7 +65,7 @@ class ChatListScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final currentUser = ref.watch(authServiceProvider).currentUser;
 
     if (currentUser == null) {
@@ -72,9 +95,51 @@ class ChatListScreen extends ConsumerWidget {
         stream: conversationsStream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
+            print("StreamBuilder error: ${snapshot.error}");
             return Center(
-                child: Text('Error loading messages',
-                    style: GoogleFonts.outfit(color: AppColors.error)));
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: AppColors.error,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading messages',
+                    style: GoogleFonts.outfit(
+                      color: AppColors.error,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Please check your connection and try again',
+                    style: GoogleFonts.outfit(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Refresh by navigating to same route
+                      context.push('/chat');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text(
+                      'Try Again',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());

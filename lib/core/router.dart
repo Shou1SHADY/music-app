@@ -11,6 +11,7 @@ import '../features/onboarding/onboarding_screen.dart';
 import '../features/chat/chat_detail_screen.dart';
 import '../features/studios/studio_detail_screen.dart';
 import '../features/profile/edit_profile_screen.dart';
+import '../features/bookings/booking_history_screen.dart';
 import '../models/user_model.dart';
 import '../models/studio_model.dart';
 
@@ -97,6 +98,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 
           return StudioDetailScreen(studio: studio);
         },
+      ),
+      GoRoute(
+        path: '/booking-history',
+        builder: (context, state) => const BookingHistoryScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

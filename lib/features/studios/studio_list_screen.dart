@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../models/studio_model.dart';
 import '../../services/firestore_service.dart';
 import '../../core/constants.dart';
+import '../bookings/booking_sheet.dart';
 
 final studiosProvider = StreamProvider<List<StudioModel>>((ref) {
   return ref.watch(firestoreServiceProvider).getStudios();
@@ -26,6 +27,15 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _openBookingSheet(StudioModel studio) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BookingSheet(studio: studio),
+    );
   }
 
   List<StudioModel> _filterStudios(List<StudioModel> studios) {
@@ -77,26 +87,6 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                Icons.tune_rounded,
-                color: AppColors.primary,
-                size: 20,
-              ),
-            ),
-            onPressed: () {
-              // TODO: Show advanced filters
-            },
-          ),
-          SizedBox(width: 8),
-        ],
       ),
       body: Column(
         children: [
@@ -236,7 +226,7 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
           ),
           SizedBox(height: 12),
           SizedBox(
-            height: 40,
+            height: 48, // Increased height to accommodate text
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: AppConstants.egyptCities.length + 1,
@@ -245,28 +235,30 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
                 final isSelected = _selectedCity == city;
                 return Padding(
                   padding: EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(
-                      city,
-                      style: GoogleFonts.outfit(
-                        color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
-                        fontSize: 14,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedCity = city),
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: 200),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.primary : const Color(0xFF1A1A2E),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected ? AppColors.primary : AppColors.primary.withOpacity(0.3),
+                          width: 1,
+                        ),
                       ),
-                    ),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() => _selectedCity = city);
-                    },
-                    backgroundColor: const Color(0xFF1A1A2E),
-                    selectedColor: AppColors.primary,
-                    checkmarkColor: Colors.white,
-                    side: BorderSide(
-                      color: isSelected ? AppColors.primary : AppColors.primary.withOpacity(0.3),
-                      width: 1,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      child: Center(
+                        child: Text(
+                          city,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.outfit(
+                            color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 );
@@ -546,7 +538,7 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            // TODO: Open booking sheet
+                            _openBookingSheet(studio);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
