@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'chat_service.dart';
 import '../auth/auth_service.dart';
 import '../../core/constants.dart';
@@ -10,6 +9,37 @@ import '../../models/user_model.dart';
 
 class ChatListScreen extends ConsumerWidget {
   const ChatListScreen({super.key});
+
+  String _formatMessageTime(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+    
+    // Convert to local time
+    final localTime = timestamp.toLocal();
+    
+    // If less than 1 minute ago
+    if (difference.inSeconds < 60) {
+      return 'now';
+    }
+    
+    // If less than 1 hour ago
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m';
+    }
+    
+    // If less than 24 hours ago
+    if (difference.inHours < 24) {
+      return '${difference.inHours}h';
+    }
+    
+    // If less than 7 days ago
+    if (difference.inDays < 7) {
+      return '${difference.inDays}d';
+    }
+    
+    // Otherwise show date
+    return '${localTime.day}/${localTime.month}/${localTime.year}';
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -194,7 +224,7 @@ class ChatListScreen extends ConsumerWidget {
                     ),
                   ),
                   trailing: Text(
-                    timeago.format(timestamp ?? DateTime.now(), locale: 'en_short'),
+                    _formatMessageTime(timestamp ?? DateTime.now()),
                     style: GoogleFonts.outfit(
                       color: Colors.white.withOpacity(0.5),
                       fontSize: 12,

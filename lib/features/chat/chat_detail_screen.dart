@@ -31,6 +31,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // Configure timeago for better local time display
+    timeago.setLocaleMessages('en_short', timeago.EnShortMessages());
     // Refresh timeago every minute
     _timeagoTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (mounted) setState(() {});
@@ -267,6 +269,37 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     }
   }
 
+  String _formatMessageTime(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+    
+    // Convert to local time
+    final localTime = timestamp.toLocal();
+    
+    // If less than 1 minute ago
+    if (difference.inSeconds < 60) {
+      return 'now';
+    }
+    
+    // If less than 1 hour ago
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m';
+    }
+    
+    // If less than 24 hours ago
+    if (difference.inHours < 24) {
+      return '${difference.inHours}h';
+    }
+    
+    // If less than 7 days ago
+    if (difference.inDays < 7) {
+      return '${difference.inDays}d';
+    }
+    
+    // Otherwise show date
+    return '${localTime.day}/${localTime.month}/${localTime.year}';
+  }
+
   Widget _buildMessageBubble(MessageModel message, bool isMe) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -319,7 +352,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                timeago.format(message.timestamp, locale: 'en_short'),
+                _formatMessageTime(message.timestamp),
                 style: GoogleFonts.outfit(
                   color: Colors.white.withOpacity(0.6),
                   fontSize: 11,
