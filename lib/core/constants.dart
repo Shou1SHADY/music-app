@@ -24,7 +24,7 @@ class AppColors {
 }
 
 class AppConstants {
-  static const String appName = 'Egypt Music Community';
+  static const String appName = 'JamMate';
   static const List<String> egyptCities = [
     'Cairo',
     'Giza',

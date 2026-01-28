@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import '../../models/user_model.dart';
-import '../../services/firestore_service.dart';
-import '../chat/chat_service.dart';
-import '../auth/auth_service.dart';
 import '../../core/constants.dart';
+import '../../widgets/jam_mate_logo.dart';
+import '../../models/user_model.dart';
+import '../auth/auth_service.dart';
+import '../chat/chat_service.dart';
+import '../chat/chat_detail_screen.dart';
+import '../../services/firestore_service.dart';
 
 final musiciansProvider = StreamProvider<List<UserModel>>((ref) {
   return ref.watch(firestoreServiceProvider).getMusicians();
@@ -69,7 +71,7 @@ class _MusicianListScreenState extends ConsumerState<MusicianListScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Find Musicians'),
-            Text('Connect & Jam in Egypt',
+            Text('Connect & Jam Together',
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall
@@ -657,15 +659,7 @@ class _MusicianListScreenState extends ConsumerState<MusicianListScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.music_off_outlined,
-                size: 48, color: AppColors.textMuted),
-          ),
+          JamMateLogo(size: 80),
           const SizedBox(height: 24),
           Text(
             'No Musicians Found',

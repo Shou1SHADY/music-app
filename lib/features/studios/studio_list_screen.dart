@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/constants.dart';
+import '../../widgets/jam_mate_logo.dart';
 import '../../models/studio_model.dart';
 import '../../services/firestore_service.dart';
-import '../../core/constants.dart';
 import '../bookings/booking_sheet.dart';
 
 final studiosProvider = StreamProvider<List<StudioModel>>((ref) {
@@ -78,7 +79,7 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
               ),
             ),
             Text(
-              'Book rehearsal space in Egypt',
+              'Find your perfect jam space',
               style: GoogleFonts.outfit(
                 color: AppColors.primary,
                 fontSize: 12,
@@ -275,11 +276,7 @@ class _StudioListScreenState extends ConsumerState<StudioListScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.search_off_rounded,
-            size: 64,
-            color: AppColors.primary.withOpacity(0.5),
-          ),
+          JamMateLogo(size: 80),
           SizedBox(height: 16),
           Text(
             'No studios found',
